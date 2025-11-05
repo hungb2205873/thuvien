@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thư Viện Sách - BookHub</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Header & Navigation -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="container">
+        <div class="nav-wrapper">
+          <div class="logo">
+            <a href="index.html">📚 BookHub</a>
+          </div>
+          <button class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <ul class="nav-menu" id="navMenu">
+            <li><a href="index.html">Trang Chủ</a></li>
+            <li><a href="library.html" class="nav-active">Thư Viện</a></li>
+            <li class="nav-dropdown">
+              <a href="#" class="dropdown-toggle">Thể Loại</a>
+              <ul class="dropdown-menu">
+                <li><a href="#" onclick="filterBooks('all')">Tất Cả</a></li>
+                <li><a href="#" onclick="filterBooks('Tiểu Thuyết')">Tiểu Thuyết</a></li>
+                <li><a href="#" onclick="filterBooks('Khoa Học')">Khoa Học</a></li>
+                <li><a href="#" onclick="filterBooks('Lịch Sử')">Lịch Sử</a></li>
+                <li><a href="#" onclick="filterBooks('Tâm Lý')">Tâm Lý</a></li>
+                <li><a href="#" onclick="filterBooks('Kinh Doanh')">Kinh Doanh</a></li>
+              </ul>
+            </li>
+            <li><a href="login.html" class="btn-auth">Đăng Nhập</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Library Page -->
+  <section class="library-page">
+    <div class="container">
+      <!-- Page Header -->
+      <div class="library-page-header">
+        <h1>Thư Viện Sách Online</h1>
+        <p>Khám phá và tìm kiếm hàng ngàn cuốn sách trong bộ sưu tập của chúng tôi</p>
+      </div>
+
+      <!-- Search & Filter Section -->
+      <div class="library-search-section">
+        <div class="search-box">
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Tìm kiếm theo tên sách, tác giả..."
+          />
+          <button class="search-btn" onclick="handleSearch()">🔍 Tìm Kiếm</button>
+        </div>
+        
+        <div class="filter-section">
+          <button class="filter-btn active" onclick="filterBooks('all')">Tất Cả</button>
+          <button class="filter-btn" onclick="filterBooks('Tiểu Thuyết')">Tiểu Thuyết</button>
+          <button class="filter-btn" onclick="filterBooks('Khoa Học')">Khoa Học</button>
+          <button class="filter-btn" onclick="filterBooks('Lịch Sử')">Lịch Sử</button>
+          <button class="filter-btn" onclick="filterBooks('Tâm Lý')">Tâm Lý</button>
+          <button class="filter-btn" onclick="filterBooks('Kinh Doanh')">Kinh Doanh</button>
+        </div>
+      </div>
+
+      <!-- Books Display -->
+      <div class="row g-4" id="libraryBooksContainer">
+        <!-- Books will be loaded here -->
+      </div>
+
+      <!-- No Results Message -->
+      <div class="no-results" id="noResults" style="display: none;">
+        <p>Không tìm thấy sách phù hợp với tìm kiếm của bạn.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>Về BookHub</h4>
+          <ul>
+            <li><a href="#">Giới Thiệu</a></li>
+            <li><a href="#">Liên Hệ</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Duyệt Sách</h4>
+          <ul>
+            <li><a href="#">Sách Mới</a></li>
+            <li><a href="#">Sách Nổi Bật</a></li>
+            <li><a href="#">Tác Giả</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Hỗ Trợ</h4>
+          <ul>
+            <li><a href="#">Trung Tâm Trợ Giúp</a></li>
+            <li><a href="#">Điều Khoản Sử Dụng</a></li>
+            <li><a href="#">Chính Sách Riêng Tư</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 BookHub. Tất cả quyền được bảo lưu.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    let currentFilter = 'all';
+    let allBooks = [];
+
+    // Render library books
+    function renderLibraryBooks(books = allBooks) {
+      const container = document.getElementById('libraryBooksContainer');
+      const noResults = document.getElementById('noResults');
+
+      if (books.length === 0) {
+        container.innerHTML = '';
+        noResults.style.display = 'block';
+      } else {
+        noResults.style.display = 'none';
+        container.innerHTML = books
+          .map(
+            (book) => `
+          <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+            <div class="book-card">
+              <div class="book-cover">📚</div>
+              <div class="book-info">
+                <div class="book-title">${book.title}</div>
+                <div class="book-author">Tác giả: ${book.author}</div>
+                <div class="book-description">${book.description}</div>
+                <div class="book-meta">
+                  <span>${book.category}</span>
+                  <span class="book-rating">⭐ ${book.rating}</span>
+                </div>
+                <a href="login.html" class="btn btn-primary" style="display: block; text-align: center;">Mượn Sách</a>
+              </div>
+            </div>
+          </div>
+        `,
+          )
+          .join('');
+      }
+    }
+
+    // Filter books by category
+    function filterBooks(category) {
+      currentFilter = category;
+      
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.includes(category === 'all' ? 'Tất Cả' : category)) {
+          btn.classList.add('active');
+        }
+      });
+
+      if (category === 'all') {
+        renderLibraryBooks(allBooks);
+      } else {
+        const filtered = allBooks.filter(book => book.category === category);
+        renderLibraryBooks(filtered);
+      }
+    }
+
+    // Search books
+    function handleSearch() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      
+      if (searchInput.trim() === '') {
+        filterBooks(currentFilter);
+        return;
+      }
+
+      const results = allBooks.filter(book =>
+        book.title.toLowerCase().includes(searchInput) ||
+        book.author.toLowerCase().includes(searchInput) ||
+        book.description.toLowerCase().includes(searchInput)
+      );
+
+      renderLibraryBooks(results);
+    }
+
+    // Allow search on Enter key
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        handleSearch();
+      }
+    });
+
+    // Initialize library page
+    document.addEventListener('DOMContentLoaded', () => {
+      allBooks = [
+        {
+          id: 1,
+          title: "Đắc Nhân Tâm",
+          author: "Dale Carnegie",
+          description: "Cuốn sách kinh điển về kỹ năng giao tiếp và xây dựng mối quan hệ.",
+          category: "Tâm Lý",
+          updated_at: "2024-01-15",
+          rating: 4.8,
+        },
+        {
+          id: 2,
+          title: "Tư Duy Nhanh và Chậm",
+          author: "Daniel Kahneman",
+          description: "Khám phá cách não bộ đưa ra quyết định và rơi vào các sai lầm nhận thức.",
+          category: "Tâm Lý",
+          updated_at: "2024-01-20",
+          rating: 4.7,
+        },
+        {
+          id: 3,
+          title: "Dạy Con Làm Giàu",
+          author: "Robert T. Kiyosaki",
+          description: "Hướng dẫn cha mẹ dạy con về tiền bạc và tạo dựng tài chính lành mạnh.",
+          category: "Kinh Doanh",
+          updated_at: "2024-01-25",
+          rating: 4.6,
+        },
+        {
+          id: 4,
+          title: "Những Người Thành Công Không Bao Giờ Đi Ngủ",
+          author: "Jeff Sanders",
+          description: "Khám phá bí mật thành công của những người giàu nhất thế giới.",
+          category: "Kinh Doanh",
+          updated_at: "2024-02-01",
+          rating: 4.5,
+        },
+        {
+          id: 5,
+          title: "Lịch Sử Thế Giới",
+          author: "Will Durant",
+          description: "Một cuộc hành trình xuyên suốt lịch sử loài người từ thời cổ đại.",
+          category: "Lịch Sử",
+          updated_at: "2024-02-05",
+          rating: 4.4,
+        },
+        {
+          id: 6,
+          title: "Vũ Trụ Bí Ẩn",
+          author: "Carl Sagan",
+          description: "Khám phá những bí ẩn của vũ trụ và vị trí của chúng ta trong đó.",
+          category: "Khoa Học",
+          updated_at: "2024-02-10",
+          rating: 4.9,
+        },
+      ];
+      renderLibraryBooks();
+    });
+  </script>
+</body>
+</html>

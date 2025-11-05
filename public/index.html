@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thư Viện Online - Trang Chủ</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Header & Navigation -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="container">
+        <div class="nav-wrapper">
+          <div class="logo">
+            <a href="index.html">📚 BookHub</a>
+          </div>
+          <button class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <ul class="nav-menu" id="navMenu">
+            <li><a href="index.html">Trang Chủ</a></li>
+            <li class="nav-dropdown">
+              <a href="#" class="dropdown-toggle">Thể Loại</a>
+              <ul class="dropdown-menu">
+                <li><a href="#category-fiction">Tiểu Thuyết</a></li>
+                <li><a href="#category-science">Khoa Học</a></li>
+                <li><a href="#category-history">Lịch Sử</a></li>
+                <li><a href="#category-psychology">Tâm Lý</a></li>
+                <li><a href="#category-business">Kinh Doanh</a></li>
+              </ul>
+            </li>
+            <li><a href="#books">Sách Mới</a></li>
+            <li><a href="library.html">Thư Viện</a></li>
+            <li><a href="login.html" class="btn-auth">Đăng Nhập</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Khám Phá Thế Giới Sách Vô Tận</h1>
+      <p>Truy cập bộ sưu tập hàng ngàn cuốn sách được tuyển chọn dành cho bạn</p>
+      
+      <!-- Added search bar in hero section -->
+      <div class="hero-search">
+        <input
+          type="text"
+          id="heroSearchInput"
+          class="search-input-hero"
+          placeholder="Tìm kiếm sách, tác giả..."
+        />
+        <button class="search-btn-hero" onclick="searchFromHero()">🔍 Tìm Kiếm</button>
+      </div>
+
+      <div class="hero-buttons">
+        <a href="signup.html" class="btn btn-primary">Đăng Ký Miễn Phí</a>
+        <a href="login.html" class="btn btn-secondary">Đăng Nhập</a>
+      </div>
+    </div>
+    <div class="hero-image">
+      <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+        <rect x="50" y="50" width="80" height="120" fill="#2c3e50" rx="5"/>
+        <rect x="160" y="40" width="80" height="130" fill="#3498db" rx="5"/>
+        <rect x="270" y="55" width="80" height="115" fill="#e74c3c" rx="5"/>
+        <circle cx="90" cy="120" r="25" fill="#ecf0f1"/>
+        <circle cx="200" cy="110" r="25" fill="#ecf0f1"/>
+        <circle cx="310" cy="125" r="25" fill="#ecf0f1"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Categories Section -->
+  <section class="categories">
+    <div class="container">
+      <h2>Khám Phá Theo Thể Loại</h2>
+      <div class="category-grid">
+        <div class="category-card" id="category-fiction">
+          <div class="category-icon">📖</div>
+          <h3>Tiểu Thuyết</h3>
+          <p>Các tác phẩm văn học kinh điển và hiện đại</p>
+        </div>
+        <div class="category-card" id="category-science">
+          <div class="category-icon">🔬</div>
+          <h3>Khoa Học</h3>
+          <p>Khám phá những điều thú vị về thế giới</p>
+        </div>
+        <div class="category-card" id="category-history">
+          <div class="category-icon">📜</div>
+          <h3>Lịch Sử</h3>
+          <p>Hành trình qua những kỷ nguyên lịch sử</p>
+        </div>
+        <div class="category-card" id="category-psychology">
+          <div class="category-icon">🧠</div>
+          <h3>Tâm Lý</h3>
+          <p>Hiểu rõ hơn về bản thân và con người</p>
+        </div>
+        <div class="category-card" id="category-business">
+          <div class="category-icon">💼</div>
+          <h3>Kinh Doanh</h3>
+          <p>Bí quyết thành công trong kinh doanh</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest Books Section -->
+  <section class="latest-books" id="books">
+    <div class="container">
+      <div class="section-header">
+        <h2>📚 3 Quyển Sách Mới Nhất</h2>
+        <p>Những cuốn sách được cập nhật gần đây nhất</p>
+      </div>
+      <div class="books-grid" id="booksContainer">
+        <!-- Books will be loaded here -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>Về BookHub</h4>
+          <ul>
+            <li><a href="#">Giới Thiệu</a></li>
+            <li><a href="#">Liên Hệ</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Duyệt Sách</h4>
+          <ul>
+            <li><a href="#">Sách Mới</a></li>
+            <li><a href="#">Sách Nổi Bật</a></li>
+            <li><a href="#">Tác Giả</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Hỗ Trợ</h4>
+          <ul>
+            <li><a href="#">Trung Tâm Trợ Giúp</a></li>
+            <li><a href="#">Điều Khoản Sử Dụng</a></li>
+            <li><a href="#">Chính Sách Riêng Tư</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 BookHub. Tất cả quyền được bảo lưu.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
