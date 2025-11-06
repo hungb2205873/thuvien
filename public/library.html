@@ -125,7 +125,66 @@
     let currentFilter = 'all';
     let allBooks = [];
 
-    // Render library books
+    async function loadBooks() {
+      try {
+        const response = await fetch('api/books.php'); // Đường dẫn API backend kết nối MySQL
+        const data = await response.json();
+        allBooks = data.map(book => ({
+          ma_sach: book.ma_sach,
+          ten_sach: book.ten_sach,
+          ten_tac_gia: book.ten_tac_gia,
+          nha_xuat_ban: book.nha_xuat_ban,
+          nam_xuat_ban: book.nam_xuat_ban,
+          so_luong: book.so_luong,
+          ngay_them: book.ngay_them,
+          ten_the_loai: book.ten_the_loai
+        }));
+        renderLibraryBooks();
+      } catch (error) {
+        console.error('Lỗi khi tải sách:', error);
+        // Fallback to mock data if API fails
+        loadMockBooks();
+      }
+    }
+
+    // Fallback mock data if MySQL API unavailable
+    function loadMockBooks() {
+      allBooks = [
+        {
+          ma_sach: 1,
+          ten_sach: "Đắc Nhân Tâm",
+          ten_tac_gia: "Dale Carnegie",
+          nha_xuat_ban: "Nhà Xuất Bản A",
+          nam_xuat_ban: 2020,
+          so_luong: 5,
+          ngay_them: "2024-01-15",
+          ten_the_loai: "Tâm Lý",
+        },
+        {
+          ma_sach: 2,
+          ten_sach: "Tư Duy Nhanh và Chậm",
+          ten_tac_gia: "Daniel Kahneman",
+          nha_xuat_ban: "Nhà Xuất Bản B",
+          nam_xuat_ban: 2019,
+          so_luong: 3,
+          ngay_them: "2024-01-20",
+          ten_the_loai: "Tâm Lý",
+        },
+        {
+          ma_sach: 3,
+          ten_sach: "Dạy Con Làm Giàu",
+          ten_tac_gia: "Robert T. Kiyosaki",
+          nha_xuat_ban: "Nhà Xuất Bản C",
+          nam_xuat_ban: 2021,
+          so_luong: 8,
+          ngay_them: "2024-01-25",
+          ten_the_loai: "Kinh Doanh",
+        },
+      ];
+      renderLibraryBooks();
+    }
+
+    // Render library books with MySQL data fields
     function renderLibraryBooks(books = allBooks) {
       const container = document.getElementById('libraryBooksContainer');
       const noResults = document.getElementById('noResults');
@@ -142,12 +201,14 @@
             <div class="book-card">
               <div class="book-cover">📚</div>
               <div class="book-info">
-                <div class="book-title">${book.title}</div>
-                <div class="book-author">Tác giả: ${book.author}</div>
-                <div class="book-description">${book.description}</div>
+                <div class="book-title">${book.ten_sach}</div>
+                <div class="book-author">Tác giả: ${book.ten_tac_gia}</div>
                 <div class="book-meta">
-                  <span>${book.category}</span>
-                  <span class="book-rating">⭐ ${book.rating}</span>
+                  <p><strong>NXB:</strong> ${book.nha_xuat_ban}</p>
+                  <p><strong>Năm:</strong> ${book.nam_xuat_ban}</p>
+                  <p><strong>Số lượng:</strong> ${book.so_luong}</p>
+                  <p><strong>Thể loại:</strong> ${book.ten_the_loai}</p>
+                  <p><strong>Ngày thêm:</strong> ${book.ngay_them}</p>
                 </div>
                 <a href="login.html" class="btn btn-primary" style="display: block; text-align: center;">Mượn Sách</a>
               </div>
@@ -173,7 +234,7 @@
       if (category === 'all') {
         renderLibraryBooks(allBooks);
       } else {
-        const filtered = allBooks.filter(book => book.category === category);
+        const filtered = allBooks.filter(book => book.ten_the_loai === category);
         renderLibraryBooks(filtered);
       }
     }
@@ -188,9 +249,9 @@
       }
 
       const results = allBooks.filter(book =>
-        book.title.toLowerCase().includes(searchInput) ||
-        book.author.toLowerCase().includes(searchInput) ||
-        book.description.toLowerCase().includes(searchInput)
+        book.ten_sach.toLowerCase().includes(searchInput) ||
+        book.ten_tac_gia.toLowerCase().includes(searchInput) ||
+        book.nha_xuat_ban.toLowerCase().includes(searchInput)
       );
 
       renderLibraryBooks(results);
@@ -205,63 +266,7 @@
 
     // Initialize library page
     document.addEventListener('DOMContentLoaded', () => {
-      allBooks = [
-        {
-          id: 1,
-          title: "Đắc Nhân Tâm",
-          author: "Dale Carnegie",
-          description: "Cuốn sách kinh điển về kỹ năng giao tiếp và xây dựng mối quan hệ.",
-          category: "Tâm Lý",
-          updated_at: "2024-01-15",
-          rating: 4.8,
-        },
-        {
-          id: 2,
-          title: "Tư Duy Nhanh và Chậm",
-          author: "Daniel Kahneman",
-          description: "Khám phá cách não bộ đưa ra quyết định và rơi vào các sai lầm nhận thức.",
-          category: "Tâm Lý",
-          updated_at: "2024-01-20",
-          rating: 4.7,
-        },
-        {
-          id: 3,
-          title: "Dạy Con Làm Giàu",
-          author: "Robert T. Kiyosaki",
-          description: "Hướng dẫn cha mẹ dạy con về tiền bạc và tạo dựng tài chính lành mạnh.",
-          category: "Kinh Doanh",
-          updated_at: "2024-01-25",
-          rating: 4.6,
-        },
-        {
-          id: 4,
-          title: "Những Người Thành Công Không Bao Giờ Đi Ngủ",
-          author: "Jeff Sanders",
-          description: "Khám phá bí mật thành công của những người giàu nhất thế giới.",
-          category: "Kinh Doanh",
-          updated_at: "2024-02-01",
-          rating: 4.5,
-        },
-        {
-          id: 5,
-          title: "Lịch Sử Thế Giới",
-          author: "Will Durant",
-          description: "Một cuộc hành trình xuyên suốt lịch sử loài người từ thời cổ đại.",
-          category: "Lịch Sử",
-          updated_at: "2024-02-05",
-          rating: 4.4,
-        },
-        {
-          id: 6,
-          title: "Vũ Trụ Bí Ẩn",
-          author: "Carl Sagan",
-          description: "Khám phá những bí ẩn của vũ trụ và vị trí của chúng ta trong đó.",
-          category: "Khoa Học",
-          updated_at: "2024-02-10",
-          rating: 4.9,
-        },
-      ];
-      renderLibraryBooks();
+      loadBooks();
     });
   </script>
 </body>
