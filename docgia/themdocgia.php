@@ -4,128 +4,94 @@
         header('location: ../dangnhap.php');
         die();
     }
+
     if(isset($_POST['save'])){
-        $id = $tendg = $ngaysinh = $diachi = '';
-        // Lay id tu URL
+        $tendg = $_POST['tendg'] ?? '';
+        $ngaysinh = $_POST['ngaysinh'] ?? '';
+        $sdt = $_POST['sdt'] ?? '';
+        $email = $_POST['email'] ?? '';
 
-        if(isset($_GET['id'])){
-            $id = $_GET['id'];
-        }
-        if(isset($_POST['tendg'])){
-            $tendg = $_POST['tendg'];
-        }
-        if(isset($_POST['ngaysinh'])){
-            $ngaysinh = $_POST['ngaysinh'];
-        }
-        if(isset($_POST['diachi'])){
-            $diachi = $_POST['diachi'];
-        }
+        $errors = [];
 
-        
-        // In hoa tendg
-        $tendg = strtoupper($tendg);
+        if($tendg == '') $errors['tendg'] = "<div class='text-danger'>Bạn chưa nhập tên độc giả.</div>";
+        if($ngaysinh == '') $errors['ngaysinh'] = "<div class='text-danger'>Bạn chưa nhập ngày sinh.</div>";
+        if($sdt == '') $errors['sdt'] = "<div class='text-danger'>Bạn chưa nhập số điện thoại.</div>";
+        if($email == '') $errors['email'] = "<div class='text-danger'>Bạn chưa nhập email.</div>";
 
-        //Fix lỗi SQL Injection
-        $tendg = str_replace('\'','\\\'',$tendg);
-        $ngaysinh = str_replace('\'','\\\'',$ngaysinh);
-        $diachi = str_replace('\'','\\\'',$diachi);
-
-        $sql = "SELECT * from docgia";
-        $res = mysqli_query($conn,$sql);
-        $trungtensach = 0;
-        if($res == true){
-            while($rows = mysqli_fetch_assoc($res)){
-                if($rows['tendg'] == $tendg){
-                    $trungtendocgia = 1;
-                }
-            }
-        }
-        if($trungtendocgia == 1){
-            $errors['tendg'] = "<div class='text-danger'><i>Độc giả này đã được thêm</i></div>";
-        }
-
-        $errors = array();
-        if($tendg == ''){
-            $errors['tendg'] = "<div class='text-danger'>Bạn chưa nhập tên độc giả.</div>";
-        }
-        if($ngaysinh == ''){
-            $errors['ngaysinh'] = "<div class='text-danger'>Bạn chưa nhập ngày sinh.</div>";
-        }
-        if($diachi == ''){
-            $errors['diachi'] = "<div class='text-danger'>Bạn chưa nhập địa chỉ.</div>";
-        }
-        
         if(!$errors){
-            $sql = "CALL themdocgia('$tendg','$ngaysinh','$diachi')";
+            // Thêm độc giả vào bảng doc_gia
+            $sql = "INSERT INTO doc_gia (ten_doc_gia, ngay_sinh, so_dien_thoai, email) 
+                    VALUES ('$tendg','$ngaysinh','$sdt','$email')";
             $res = mysqli_query($conn,$sql);
-            if($res == true){
+            if($res){
                 $_SESSION['themdocgia1'] = "<div class='text-success' style='font-size:20px'><strong>Bạn đã thêm độc giả thành công</strong></div>";
                 header('location: hienthidocgia.php');
+                exit;
+            } else {
+                $_SESSION['themdocgia'] = "<div class='text-danger text-center' style='font-size:20px'><strong>Thêm độc giả thất bại</strong></div>";
             }
-            
-        }else{
-            $_SESSION['themdocgia'] = "<div class='text-danger text-center' style='font-size:20px'><strong>Thêm độc giả thất bại</strong></div>";
         }
-
     }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUẢN LÍ SÁCH</title>
+    <title>THÊM ĐỘC GIẢ</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-
     <div class="container mt-3">
         <a href="hienthidocgia.php" class="btn btn-primary">Quay trở lại</a>
-         <h2 class="text-center mt-3 text-white mb-3" style="background: linear-gradient(to right, #6EC6FF, #6A1B9A);">thêm sách</h2>
+        <h2 class="text-center mt-3 text-white mb-3" style="background: linear-gradient(to right, #6EC6FF, #6A1B9A);">Thêm độc giả</h2>
 
-        <form  method="POST">
-            <div class="row mb-5">
-                <label for="tendg" class="form-label col-sm-2 text-end "><strong>Nhập tên độc giả</strong></label>
+        <?php 
+            if(isset($_SESSION['themdocgia1'])){
+                echo $_SESSION['themdocgia1'];
+                unset($_SESSION['themdocgia1']);
+            }
+            if(isset($_SESSION['themdocgia'])){
+                echo $_SESSION['themdocgia'];
+                unset($_SESSION['themdocgia']);
+            }
+        ?>
+
+        <form method="POST">
+            <div class="row mb-3">
+                <label for="tendg" class="form-label col-sm-2 text-end"><strong>Tên độc giả</strong></label>
                 <div class="col-sm-9">
-                    <input type="text" class="form-control" id="tendg" placeholder="Nhập tên độc giả" name="tendg" value="<?php if(isset($tendg)) {echo $tendg;} ?>">
-                    <?php 
-                        if(isset($errors['tendg'])){
-                            echo $errors['tendg'];
-                        }
-                    ?>
+                    <input type="text" class="form-control" id="tendg" name="tendg" value="<?php if(isset($tendg)) echo $tendg; ?>">
+                    <?php if(isset($errors['tendg'])) echo $errors['tendg']; ?>
                 </div>
             </div>
 
-            <div class="row mb-5">
-                <label for="ngaysinh" class="form-label col-sm-2 text-end "><strong>Nhập ngày sinh</strong></label>
+            <div class="row mb-3">
+                <label for="ngaysinh" class="form-label col-sm-2 text-end"><strong>Ngày sinh</strong></label>
                 <div class="col-sm-9">
-                    <input type="date" class="form-control" id="ngaysinh" placeholder="Nhập ngày sinh" name="ngaysinh" value="<?php if(isset($ngaysinh)) {echo $ngaysinh;} ?>">
-                    <?php 
-                        if(isset($errors['ngaysinh'])){
-                            echo $errors['ngaysinh'];
-                        }
-                    ?>
+                    <input type="date" class="form-control" id="ngaysinh" name="ngaysinh" value="<?php if(isset($ngaysinh)) echo $ngaysinh; ?>">
+                    <?php if(isset($errors['ngaysinh'])) echo $errors['ngaysinh']; ?>
                 </div>
             </div>
 
-            <div class="row mb-5">
-                <label for="diachi" class="form-label col-sm-2 text-end "><strong>Nhập địa chỉ</strong></label>
+            <div class="row mb-3">
+                <label for="sdt" class="form-label col-sm-2 text-end"><strong>Số điện thoại</strong></label>
                 <div class="col-sm-9">
-                    <input type="text" class="form-control" id="diachi" placeholder="Nhập địa chỉ" name="diachi" value="<?php if(isset($diachi)) {echo $diachi;} ?>">
-                    <?php 
-                        if(isset($errors['diachi'])){
-                            echo $errors['diachi'];
-                        }
-                    ?>
+                    <input type="text" class="form-control" id="sdt" name="sdt" value="<?php if(isset($sdt)) echo $sdt; ?>">
+                    <?php if(isset($errors['sdt'])) echo $errors['sdt']; ?>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label for="email" class="form-label col-sm-2 text-end"><strong>Email</strong></label>
+                <div class="col-sm-9">
+                    <input type="email" class="form-control" id="email" name="email" value="<?php if(isset($email)) echo $email; ?>">
+                    <?php if(isset($errors['email'])) echo $errors['email']; ?>
                 </div>
             </div>
 
             <button class="btn btn-success offset-sm-2" name="save">Lưu lại</button>
         </form>
     </div>
-    
 </body>
 </html>

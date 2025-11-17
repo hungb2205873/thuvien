@@ -1,10 +1,10 @@
-    <?php 
-        require_once "../config.php";
-        if(!isset($_SESSION['tk'])){
-            header('location: ../dangnhap.php');
-            die();
-        }
-    ?>
+<?php 
+    require_once "../config.php";
+    if(!isset($_SESSION['tk'])){
+        header('location: ../dangnhap.php');
+        die();
+    }
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -13,19 +13,14 @@
    <nav class="navbar navbar-expand-lg navbar-light shadow-sm sticky-top" style="background: linear-gradient(to right, #6EC6FF, #6A1B9A);">
 
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="index.php">
+   <a class="navbar-brand fw-bold" href="../index.php">
             <span class="text-gradient">📚 BookHub</span>
-        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                
-                   
-                </li>
-                    <a class="btn btn-primary mt-2" href="../dangxuat.php">Đăng xuất</a>
-                </li>
+                <a class="btn btn-primary mt-2" href="../dangxuat.php">Đăng xuất</a>
             </ul>
         </div>
     </div>
@@ -51,13 +46,12 @@
 <!-- body -->
 <body>
     <div class="container">
-        <h2 class="text-center mt-3 text-white mb-3" style="background: linear-gradient(to right, #6EC6FF, #6A1B9A);">quản lí sách bookHub</h2>
+        <h2 class="text-center mt-3 text-white mb-3" style="background: linear-gradient(to right, #6EC6FF, #6A1B9A);">Quản lí mượn/trả bookHub</h2>
         <ul class="list-group list-group-horizontal mb-4">
-            <li class="list-group-item list-group-item-action list-group-item-light text-center"><a href="../sach/hienthisach.php">Quản lí sách</a></li>
-            <li class="list-group-item list-group-item-action list-group-item-light text-center"><a href="../docgia/hienthidocgia.php">Quản lí độc giả</a></li>
-            <li class="list-group-item list-group-item-action list-group-item-light text-center"><a href="../muontra/hienthimuontra.php">Quản lí mượn trả</a></li>
-            <li class="list-group-item list-group-item-action list-group-item-light text-center"><a href="../tienphat/hienthitienphat.php">Quản lí tiền phạt</a></li>
-
+            <li class="list-group-item text-center"><a href="../sach/hienthisach.php">Quản lí sách</a></li>
+            <li class="list-group-item text-center"><a href="../docgia/hienthidocgia.php">Quản lí độc giả</a></li>
+            <li class="list-group-item text-center"><a href="../muontra/hienthimuontra.php">Quản lí mượn trả</a></li>
+            <li class="list-group-item text-center"><a href="../tienphat/hienthitienphat.php">Quản lí tiền phạt</a></li>
         </ul>
     </div>
 
@@ -65,7 +59,7 @@
         
         <form method="GET" action="timkiemmuontra.php">
             <div class="input-group mb-3" style="width:50%;margin:0 auto;">
-                <input type="text" class="form-control" name="timkiem" placeholder="Tìm kiếm sách theo tình trạng">
+                <input type="text" class="form-control" name="timkiem" placeholder="Tìm kiếm sách ">
                 <button class="btn btn-primary" name="submit">Tìm kiếm</button>
             </div> 
         </form>
@@ -77,80 +71,75 @@
                 <th>Tên Độc Giả</th>
                 <th>Ngày mượn</th>
                 <th>Ngày trả</th>
-                <th>Tình Trạng</th>
+                <th>Trạng Thái</th>
                 <th>Thao tác</th>
             </thead>
             <tbody>
                 <?php
                     if(isset($_GET['submit'])){
-                        if(isset($_GET['timkiem'])){
-                            $search = $_GET['timkiem'];
-                        }else{
-                            $search ='';
-                        }
-                        $sql = "SELECT * from muontra where tinhtrang like '%$search%'";
+                        $search = $_GET['timkiem'] ?? '';
+                        // Truy vấn theo cấu trúc qlthuvien.sql
+                        $sql = "SELECT pm.ma_phieu_muon, s.ten_sach, dg.ten_doc_gia, pm.ngay_muon, pm.ngay_tra, pm.trang_thai
+                                FROM phieu_muon pm
+                                JOIN doc_gia dg ON pm.ma_doc_gia = dg.ma_doc_gia
+                                JOIN chi_tiet_phieu_muon ct ON pm.ma_phieu_muon = ct.ma_phieu_muon
+                                JOIN sach s ON ct.ma_sach = s.ma_sach
+                                WHERE pm.trang_thai LIKE '%$search%'";
                     }else{
-                        $sql = "SELECT * from muontra";
+                        $sql = "SELECT pm.ma_phieu_muon, s.ten_sach, dg.ten_doc_gia, pm.ngay_muon, pm.ngay_tra, pm.trang_thai
+                                FROM phieu_muon pm
+                                JOIN doc_gia dg ON pm.ma_doc_gia = dg.ma_doc_gia
+                                JOIN chi_tiet_phieu_muon ct ON pm.ma_phieu_muon = ct.ma_phieu_muon
+                                JOIN sach s ON ct.ma_sach = s.ma_sach";
                     }
                     
-                    $res = mysqli_query($conn,$sql);//Thực thi câu lệnh sql
+                    $res = mysqli_query($conn,$sql);
                     $index = 0;
-                    if($res == true){
+                    if($res){
                         while($rows = mysqli_fetch_assoc($res)){
-
-                            $id = $rows['id'];
-                            
+                            $id = $rows['ma_phieu_muon'];
                             $index++;
-                            $id_sach = $rows['id_sach'];
-                            $id_dg = $rows['id_dg'];
-                            $ngaymuon = $rows['ngaymuon'];
-                            $ngaytra = $rows['ngaytra'];
-                            $tinhtrang = $rows['tinhtrang'];
+                            $tensach = $rows['ten_sach'];
+                            $tendg = $rows['ten_doc_gia'];
+                            $ngaymuon = $rows['ngay_muon'];
+                            $ngaytra = $rows['ngay_tra'];
+                            $trangthai = $rows['trang_thai'];
                             ?>
-                            <!-- Viết code của html  -->
                             <tr>
                                 <td><?php echo $index; ?></td>
-
-                                <td>
-                                    <?php
-                                        $sql1 = "SELECT * FROM sach where id = $id_sach";
-                                        $res1 = mysqli_query($conn,$sql1);
-                                        while($rows1 = mysqli_fetch_assoc($res1)){
-                                            $tensach = $rows1['tensach'];
-                                            echo $tensach;
-                                        }
-                                        
-                                    ?>
-                                </td>
-
-                                <td>
-                                    <?php
-                                        $sql2 = "SELECT * FROM docgia where id = $id_dg";
-                                        $res2 = mysqli_query($conn,$sql2);
-                                        while($rows2 = mysqli_fetch_assoc($res2)){
-                                            $tendg = $rows2['tendg'];
-                                            echo $tendg;
-                                        }
-                                        
-                                    ?>
-                                </td>
-
+                                <td><?php echo $tensach; ?></td>
+                                <td><?php echo $tendg; ?></td>
                                 <td><?php echo $ngaymuon; ?></td>
                                 <td><?php echo $ngaytra; ?></td>
-                                <td><?php echo $tinhtrang; ?></td>
-                                <td><a class="btn btn-warning" href="chinhsuamuontra.php?id=<?php echo $id;?>">Edit</a>
-                                    <a class="btn btn-danger" href="xoamuontra.php?id=<?php echo $id; ?>">Delete</a>                            
+                                <td><?php echo $trangthai; ?></td>
+                                <td>
+                                    <a class="btn btn-warning" href="chinhsuamuontra.php?id=<?php echo $id;?>">sửa</a>
+                                    <a class="btn btn-danger" href="xoamuontra.php?id=<?php echo $id; ?>">xóa</a>                            
                                 </td>
                             </tr>
                             <?php
                         }
                     }
                 ?>
-                
             </tbody>
         </table>
 
         <a href="themmuontra.php" class="btn btn-success">Thêm Mượn Trả</a>
+         <button class="btn btn-info" type="submit">Xuất báo cáo</button>
+        <!-- Form xuất báo cáo -->
+        <form method="GET" action="xuatbaocaomuontra.php" class="mt-3">
+         <div class="row">
+        <div class="col-sm-3">
+            <input type="number" class="form-control" name="thang" placeholder="Tháng" min="1" max="12" required>
+        </div>
+        <div class="col-sm-3">
+            <input type="number" class="form-control" name="nam" placeholder="Năm" min="2000" max="2100" required>
+        </div>
+        <div class="col-sm-3">
+        </div>
+    </div>
+</form>
+
 
     </div>
 </body>

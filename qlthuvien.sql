@@ -20,6 +20,28 @@ SET time_zone = "+00:00";
 --
 -- Database: `qlthuvien`
 --
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin`
+--
+
+DROP TABLE IF EXISTS `admin`;
+CREATE TABLE IF NOT EXISTS `admin` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `tk` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mk` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+
+--
+-- Dumping data for table `admin`
+--
+
+INSERT INTO `admin` (`id`, `tk`, `mk`) VALUES
+(1, 'admin', 'admin');
+
+
 
 DELIMITER $$
 --
@@ -370,6 +392,28 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `total_borrows` (`period_type` VARCHA
     RETURN total;
 END$$
 
+DELIMITER //
+CREATE PROCEDURE themmuontra(
+    IN p_ma_sach INT,
+    IN p_ma_doc_gia INT,
+    IN p_ngay_muon DATE,
+    IN p_ngay_tra DATE,
+    IN p_trang_thai VARCHAR(50)
+)
+BEGIN
+    -- Thêm phiếu mượn
+    INSERT INTO phieu_muon(ma_doc_gia, ngay_muon, ngay_tra, trang_thai)
+    VALUES(p_ma_doc_gia, p_ngay_muon, p_ngay_tra, p_trang_thai);
+
+    -- Lấy id phiếu vừa thêm
+    SET @last_id = LAST_INSERT_ID();
+
+    -- Thêm chi tiết phiếu mượn
+    INSERT INTO chi_tiet_phieu_muon(ma_phieu_muon, ma_sach)
+    VALUES(@last_id, p_ma_sach);
+END //
+DELIMITER ;
+
 DELIMITER ;
 
 -- --------------------------------------------------------
@@ -475,6 +519,19 @@ INSERT INTO `doc_gia` (`ma_doc_gia`, `ten_doc_gia`, `ngay_sinh`, `so_dien_thoai`
 (15, 'Nguyễn Văn B', '2006-11-11', '02354646456', '2025-11-15 09:29:58', 'nguyenvanb@gmail.com', '$2y$10$GpJER6KMnswZfRGPHocs5.BBtCMvPU8zmEBwkPMxxXKbLMItLdpAi');
 
 --
+
+-- Xóa procedure cũ nếu tồn tại
+DROP PROCEDURE IF EXISTS XoaDocGia;
+
+DELIMITER //
+CREATE PROCEDURE XoaDocGia(IN p_ma_doc_gia INT)
+BEGIN
+    DELETE FROM doc_gia 
+    WHERE ma_doc_gia = p_ma_doc_gia;
+END //
+DELIMITER ;
+
+
 -- Triggers `doc_gia`
 --
 DELIMITER $$

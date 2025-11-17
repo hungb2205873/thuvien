@@ -4,179 +4,154 @@
         header('location: ../dangnhap.php');
         die();
     }
+
     if(isset($_POST['save'])){
-        $id = $id_sach = $id_dg = $ngaymuon = $ngaytra = $tinhtrang = '';
-        // Lay id tu URL
-
-        if(isset($_GET['id'])){
-            $id = $_GET['id'];
-        }
-        if(isset($_POST['id_sach'])){
-            $id_sach = $_POST['id_sach'];
-        }
-        if(isset($_POST['id_dg'])){
-            $id_dg = $_POST['id_dg'];
-        }
-        if(isset($_POST['ngaymuon'])){
-            $ngaymuon = $_POST['ngaymuon'];
-        }
-        if(isset($_POST['ngaytra'])){
-            $ngaytra = $_POST['ngaytra'];
-        }
-        if(isset($_POST['tinhtrang'])){
-            $tinhtrang = $_POST['tinhtrang'];
-        }
-
-        
-
-        //Fix lỗi SQL Injection
-        $id_sach = str_replace('\'','\\\'',$id_sach);
-        $id_dg = str_replace('\'','\\\'',$id_dg);
-        $ngaymuon = str_replace('\'','\\\'',$ngaymuon);
-        $ngaytra = str_replace('\'','\\\'',$ngaytra);
-        $tinhtrang = str_replace('\'','\\\'',$tinhtrang);
-
-        $sql = "SELECT * from muontra";
-        $res = mysqli_query($conn,$sql);
+        $id_sach    = $_POST['id_sach'] ?? '';
+        $id_dg      = $_POST['id_dg'] ?? '';
+        $ngaymuon   = $_POST['ngaymuon'] ?? '';
+        $ngaytra    = $_POST['ngaytra'] ?? '';
+        $trangthai  = $_POST['trangthai'] ?? '';
 
         $errors = array();
-        if($id_sach == ''){
-            $errors['id_sach'] = "<div class='text-danger'>Bạn chưa nhập id sách.</div>";
-        }
-        if($id_dg == ''){
-            $errors['id_dg'] = "<div class='text-danger'>Bạn chưa nhập id độc giả.</div>";
-        }
-        if($ngaymuon == ''){
-            $errors['ngaymuon'] = "<div class='text-danger'>Bạn chưa nhập ngày mượn.</div>";
-        }
-        if($ngaytra == ''){
-            $errors['ngaytra'] = "<div class='text-danger'>Bạn chưa nhập ngày trả.</div>";
-        }
-        if($tinhtrang == ''){
-            $errors['tinhtrang'] = "<div class='text-danger'>Bạn chưa nhập tình trạng sách.</div>";
-        }
-        
-        if(!$errors){
-            $sql = "CALL themmuontra('$id_sach','$id_dg','$ngaymuon','$ngaytra','$tinhtrang')";
-            $res = mysqli_query($conn,$sql);
-            if($res == true){
-                $_SESSION['themmuontra1'] = "<div class='text-success' style='font-size:20px'><strong>Bạn đã thêm thẻ mượn trả thành công</strong></div>";
-                header('location: hienthimuontra.php');
-            }
-            
-        }else{
-            $_SESSION['themmuontra'] = "<div class='text-danger text-center' style='font-size:20px'><strong>Thêm thẻ mượn trả thất bại</strong></div>";
-        }
+        if($id_sach == '')   $errors['id_sach']   = "<div class='text-danger'>Bạn chưa chọn sách.</div>";
+        if($id_dg == '')     $errors['id_dg']     = "<div class='text-danger'>Bạn chưa chọn độc giả.</div>";
+        if($ngaymuon == '')  $errors['ngaymuon']  = "<div class='text-danger'>Bạn chưa nhập ngày mượn.</div>";
+        if($ngaytra == '')   $errors['ngaytra']   = "<div class='text-danger'>Bạn chưa nhập ngày trả.</div>";
+        if($trangthai == '') $errors['trangthai'] = "<div class='text-danger'>Bạn chưa chọn trạng thái.</div>";
 
+        if(!$errors){
+            // Kiểm tra số lượng sách còn lại
+            $sql_check = "SELECT so_luong FROM sach WHERE ma_sach = '$id_sach'";
+            $res_check = mysqli_query($conn,$sql_check);
+            $row_check = mysqli_fetch_assoc($res_check);
+
+            if($row_check['so_luong'] <= 0){
+                $_SESSION['themmuontra'] = "<div class='text-danger'><strong>Sách này đã hết, không thể mượn</strong></div>";
+                header('location: themmuontra.php');
+                exit;
+            }
+
+            // Thêm phiếu mượn
+            $sql1 = "INSERT INTO phieu_muon(ma_doc_gia, ngay_muon, ngay_tra, trang_thai)
+                     VALUES('$id_dg','$ngaymuon','$ngaytra','$trangthai')";
+            $res1 = mysqli_query($conn,$sql1);
+
+            if($res1){
+                $last_id = mysqli_insert_id($conn); // lấy id phiếu vừa thêm
+
+                // Thêm chi tiết phiếu mượn
+                $sql2 = "INSERT INTO chi_tiet_phieu_muon(ma_phieu_muon, ma_sach)
+                         VALUES('$last_id','$id_sach')";
+                $res2 = mysqli_query($conn,$sql2);
+
+                // Trừ số lượng sách
+                $sql3 = "UPDATE sach SET so_luong = so_luong - 1 WHERE ma_sach = '$id_sach'";
+                $res3 = mysqli_query($conn,$sql3);
+
+                if($res2 && $res3){
+                    $_SESSION['themmuontra1'] = "<div class='text-success'><strong>Thêm phiếu mượn thành công</strong></div>";
+                    header('location: hienthimuontra.php');
+                    exit;
+                }
+            }
+            $_SESSION['themmuontra'] = "<div class='text-danger text-center'><strong>Thêm phiếu mượn thất bại</strong></div>";
+        }
     }
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUẢN LÍ SÁCH</title>
+    <title>Thêm phiếu mượn</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-
     <div class="container mt-3">
         <a href="hienthimuontra.php" class="btn btn-primary">Quay trở lại</a>
-        <h2 class="text-center mt-3 text-white mb-3" style="background: linear-gradient(to right, #6EC6FF, #6A1B9A);">Thêm mượn trả</h2>
+        <h2 class="text-center mt-3 text-white mb-3" style="background: linear-gradient(to right, #6EC6FF, #6A1B9A);">Thêm phiếu mượn</h2>
 
-        <form  method="POST">
-
-            <div class="row mb-5">
-                <label class="form-label col-sm-3 text-end "><strong>Chọn sách trong danh sách</strong></label>
-                <div class="col-sm-9">
-                    <select name="id_sach">
+        <form method="POST">
+            <!-- Chọn sách -->
+            <div class="row mb-3">
+                <label class="form-label col-sm-2 text-end"><strong>Sách</strong></label>
+                <div class="col-sm-10">
+                    <select name="id_sach" class="form-select">
                         <option value="">Chọn sách</option>
                         <?php 
-                            $sql = "SELECT * from sach";
+                            $sql = "SELECT ma_sach, ten_sach FROM sach";
                             $res = mysqli_query($conn,$sql);
-                            $count = mysqli_num_rows($res);
-                            if($count>0){
-                                while($rows = mysqli_fetch_assoc($res)){
-                                    $id_sach = $rows['id'];
-                                    $tensach = $rows['tensach'];
-                                    
-                                    ?>
-                                    <option  value="<?php echo $id_sach; ?>" <?php if(isset($_POST['id_sach']) && $_POST['id_sach'] == $id_sach){echo 'selected';} ?>><?php echo $tensach; ?></option>
-                                    <?php
-                                }
+                            while($row = mysqli_fetch_assoc($res)){
+                                echo "<option value='".$row['ma_sach']."'>".$row['ten_sach']."</option>";
                             }
                         ?>
                     </select>
+                    <?php if(isset($errors['id_sach'])) echo $errors['id_sach']; ?>
                 </div>
             </div>
 
-            <div class="row mb-5">
-                <label class="form-label col-sm-3 text-end "><strong>Chọn độc giả trong danh sách</strong></label>
-                <div class="col-sm-9">
-                    <select name="id_dg">
+            <!-- Chọn độc giả -->
+            <div class="row mb-3">
+                <label class="form-label col-sm-2 text-end"><strong>Độc giả</strong></label>
+                <div class="col-sm-10">
+                    <select name="id_dg" class="form-select">
                         <option value="">Chọn độc giả</option>
                         <?php 
-                            $sql = "SELECT * from docgia";
+                            $sql = "SELECT ma_doc_gia, ten_doc_gia FROM doc_gia";
                             $res = mysqli_query($conn,$sql);
-                            $count = mysqli_num_rows($res);
-                            if($count>0){
-                                while($rows = mysqli_fetch_assoc($res)){
-                                    $id_dg = $rows['id'];
-                                    $tendg = $rows['tendg'];
-                                    
-                                    ?>
-                                    <option  value="<?php echo $id_dg; ?>" <?php if(isset($_POST['id_dg']) && $_POST['id_dg'] == $id_dg){echo 'selected';} ?>><?php echo $tendg; ?></option>
-                                    <?php
-                                }
+                            while($row = mysqli_fetch_assoc($res)){
+                                echo "<option value='".$row['ma_doc_gia']."'>".$row['ten_doc_gia']."</option>";
                             }
                         ?>
                     </select>
+                    <?php if(isset($errors['id_dg'])) echo $errors['id_dg']; ?>
                 </div>
             </div>
 
-            <div class="row mb-5">
-                <label for="ngaymuon" class="form-label col-sm-2 text-end "><strong>Nhập ngày mượn</strong></label>
-                <div class="col-sm-9">
-                    <input type="date" class="form-control" id="ngaymuon" placeholder="Nhập ngày mượn" name="ngaymuon" value="<?php if(isset($ngaymuon)) {echo $ngaymuon;} ?>">
-                    <?php 
-                        if(isset($errors['ngaymuon'])){
-                            echo $errors['ngaymuon'];
-                        }
-                    ?>
-                </div>
-            </div>
-            
-            <div class="row mb-5">
-                <label for="ngaytra" class="form-label col-sm-2 text-end "><strong>Nhập ngày trả</strong></label>
-                <div class="col-sm-9">
-                    <input type="date" class="form-control" id="ngaytra" placeholder="Nhập ngày trả" name="ngaytra" value="<?php if(isset($ngaytra)) {echo $ngaytra;} ?>">
-                    <?php 
-                        if(isset($errors['ngaytra'])){
-                            echo $errors['ngaytra'];
-                        }
-                    ?>
-                </div>
-            </div>
-            
-            <div class="row mb-5">
-                <label for="active" class="form-label col-sm-2 text-end "><strong>Chọn tình trạng</strong></label>
-                <div class="col-sm-9">
-                    <span><input type="radio" name="tinhtrang" value="Đã mượn" <?php if(isset($active) && $active == 'Đã mượn'){echo "checked='checked'";}?>>Mượn</span>
-                    
-                    <?php 
-                        if(isset($errors['tinhtrang'])){
-                            echo $errors['tinhtrang'];
-                        }
-                    ?>
+            <!-- Ngày mượn -->
+            <div class="row mb-3">
+                <label for="ngaymuon" class="form-label col-sm-2 text-end"><strong>Ngày mượn</strong></label>
+                <div class="col-sm-10">
+                    <input type="date" class="form-control" id="ngaymuon" name="ngaymuon">
+                    <?php if(isset($errors['ngaymuon'])) echo $errors['ngaymuon']; ?>
                 </div>
             </div>
 
-            <button class="btn btn-success offset-sm-2" name="save">Lưu lại</button>
+            <!-- Ngày trả -->
+            <div class="row mb-3">
+                <label for="ngaytra" class="form-label col-sm-2 text-end"><strong>Ngày trả</strong></label>
+                <div class="col-sm-10">
+                    <input type="date" class="form-control" id="ngaytra" name="ngaytra">
+                    <?php if(isset($errors['ngaytra'])) echo $errors['ngaytra']; ?>
+                </div>
+            </div>
+
+            <!-- Trạng thái -->
+            <div class="row mb-3">
+                <label class="form-label col-sm-2 text-end"><strong>Trạng thái</strong></label>
+                <div class="col-sm-10">
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" name="trangthai" value="Đang mượn">
+                        <label class="form-check-label">Đang mượn</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" name="trangthai" value="Đã trả">
+                        <label class="form-check-label">Đã trả</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" name="trangthai" value="Trả muộn">
+                        <label class="form-check-label">Trả muộn</label>
+                    </div>
+                    <?php if(isset($errors['trangthai'])) echo $errors['trangthai']; ?>
+                </div>
+            </div>
+
+            <!-- Nút lưu -->
+            <div class="row mb-3">
+                <div class="col-sm-10 offset-sm-2">
+                    <button class="btn btn-success" name="save">Lưu lại</button>
+                </div>
+            </div>
         </form>
     </div>
-    
 </body>
 </html>
