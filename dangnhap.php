@@ -51,6 +51,7 @@ if (isset($_POST['submit'])) {
         <div class="nav-wrapper">
           <div class="logo">
             <a href="<?php echo $links['home']; ?>">📚 BookHub</a>
+
           </div>
           <button class="menu-toggle" id="menuToggle">
             <span></span>
@@ -120,7 +121,10 @@ if (isset($_POST['submit'])) {
     <div class="login-right">
         <div class="login-form-container">
             <div class="login-form-header">
-                <h1>Đăng Nhập</h1>
+              <h1 style="font-size: 50px; color: #3498db; text-align: center; font-family: 'Georgia', serif; font-weight: bold;">
+                Đăng Nhập
+                </h1>
+
                 <p>Truy cập tài khoản BookHub của bạn</p>
             </div>
 

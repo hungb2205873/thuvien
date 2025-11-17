@@ -172,7 +172,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `LayPhieuMuonDaTra` ()   BEGIN
     WHERE pm.trang_thai = 'Đã trả';
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `LayPhieuMuonTramuon` ()   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `LayPhieuMuonTra` ()   BEGIN
     SELECT * FROM phieu_muon pm
     join doc_gia dg on dg.ma_doc_gia = pm.ma_doc_gia
     WHERE pm.trang_thai = 'Trả muộn';
@@ -514,16 +514,16 @@ CREATE TABLE `doc_gia` (
 
 INSERT INTO `doc_gia` (`ma_doc_gia`, `ten_doc_gia`, `ngay_sinh`, `so_dien_thoai`, `created_at`, `email`, `mat_khau`) VALUES
 (1, 'Nguyễn Quàn Thắng', '2004-08-02', '0362123456', '2025-10-08 05:54:48', '', NULL),
-(4, 'Lưu Vũ Hùng', '2004-02-01', '0362123789', '2025-10-10 10:13:11', 'vuhung12@gmail.com', NULL),
-(6, 'Dương Quốc Thiện', '2004-11-05', '0365456789', '2025-10-14 01:01:00', '', NULL),
-(7, 'Dương Minh Trí', '2004-11-06', '0368098765', '2025-10-14 01:01:33', '', NULL),
-(8, 'Nguyễn Anh Kiệt', '2004-08-02', '0369123098', '2025-10-14 01:01:54', '', NULL),
-(9, 'Nguyễn Thị Minh', '2004-02-28', '0935159753', '2025-10-14 01:02:20', '', NULL),
-(10, 'Trần Gia Hảo', '2004-11-05', '0365963741', '2025-10-14 01:02:52', '', NULL),
-(11, 'Võ Thị Nguyệt', '2004-03-08', '0932258963', '2025-10-14 01:03:29', '', NULL),
-(13, 'Nguyễn Vũ Nguyên', '2002-02-11', '0123521140', '2025-11-08 14:56:38', 'nguyen@gmail.com', '$2y$10$JWBssxFV1yn6SWN5kD6qaOYo0nguNv.sGSZHIzCPluThIdiZfb8l.'),
-(14, 'Nguyễn Văn A', '2000-11-11', '01235211400', '2025-11-13 14:06:23', 'nguyenvana@gmail.com', '$2y$10$uCfstVW47XknItJplMVvSOw.Fh5XSP4xQe4LtLurM92T0wzJ.YNxO'),
-(15, 'Nguyễn Văn B', '2006-11-11', '02354646456', '2025-11-15 09:29:58', 'nguyenvanb@gmail.com', '$2y$10$GpJER6KMnswZfRGPHocs5.BBtCMvPU8zmEBwkPMxxXKbLMItLdpAi');
+(2, 'Lưu Vũ Hùng', '2004-02-01', '0362123789', '2025-10-10 10:13:11', 'vuhung12@gmail.com', NULL),
+(3, 'Dương Quốc Thiện', '2004-11-05', '0365456789', '2025-10-14 01:01:00', '', NULL),
+(4, 'Dương Minh Trí', '2004-11-06', '0368098765', '2025-10-14 01:01:33', '', NULL),
+(5, 'Nguyễn Anh Kiệt', '2004-08-02', '0369123098', '2025-10-14 01:01:54', '', NULL),
+(6, 'Nguyễn Thị Minh', '2004-02-28', '0935159753', '2025-10-14 01:02:20', '', NULL),
+(7, 'Trần Gia Hảo', '2004-11-05', '0365963741', '2025-10-14 01:02:52', '', NULL),
+(8, 'Võ Thị Nguyệt', '2004-03-08', '0932258963', '2025-10-14 01:03:29', '', NULL),
+(9, 'Nguyễn Vũ Nguyên', '2002-02-11', '0123521140', '2025-11-08 14:56:38', 'nguyen@gmail.com', '$2y$10$JWBssxFV1yn6SWN5kD6qaOYo0nguNv.sGSZHIzCPluThIdiZfb8l.'),
+(10, 'Nguyễn Văn A', '2000-11-11', '01235211400', '2025-11-13 14:06:23', 'nguyenvana@gmail.com', '$2y$10$uCfstVW47XknItJplMVvSOw.Fh5XSP4xQe4LtLurM92T0wzJ.YNxO'),
+(11, 'Nguyễn Văn B', '2006-11-11', '02354646456', '2025-11-15 09:29:58', 'nguyenvanb@gmail.com', '$2y$10$GpJER6KMnswZfRGPHocs5.BBtCMvPU8zmEBwkPMxxXKbLMItLdpAi');
 
 --
 
@@ -571,25 +571,25 @@ CREATE TABLE `phieu_muon` (
 
 INSERT INTO `phieu_muon` (`ma_phieu_muon`, `ma_doc_gia`, `ngay_muon`, `ngay_tra`, `trang_thai`) VALUES
 (2, 1, '2025-10-08', '2025-10-15', 'Đã trả'),
-(4, 1, '2025-07-27', '2025-07-27', 'Đã trả'),
-(5, 1, '2025-04-27', '2025-04-27', 'Đã trả'),
-(6, 1, '2025-08-27', '2025-08-27', 'Đã trả'),
+(4, 4, '2025-07-27', '2025-07-27', 'Đã trả'),
+(5, 2, '2025-04-27', '2025-04-27', 'Đã trả'),
+(6, 3, '2025-08-27', '2025-08-27', 'Đã trả'),
 (7, 1, '2025-03-09', '2025-03-09', 'Đã trả'),
-(8, 1, '2025-09-09', '2025-09-09', 'Đã trả'),
+(8, 7, '2025-09-09', '2025-09-09', 'Đã trả'),
 (9, 1, '2025-06-10', '2025-06-11', 'Đã trả'),
 (10, 4, '2025-10-11', '2025-10-13', 'Đã trả'),
 (11, 1, '2025-10-11', '2025-10-11', 'Đã trả'),
-(12, 1, '2025-10-11', '2025-10-11', 'Đã trả'),
+(12, 8, '2025-10-11', '2025-10-11', 'Đã trả'),
 (13, 4, '2025-10-12', '2025-10-12', 'Đã trả'),
 (14, 4, '2025-10-12', '2025-10-13', 'Đã trả'),
 (15, 1, '2025-10-13', '2025-10-13', 'Đã trả'),
-(16, 1, '2025-10-12', '2025-10-12', 'Đã trả'),
+(16, 5, '2025-10-12', '2025-10-12', 'Đã trả'),
 (17, 1, '2025-10-12', '2025-10-13', 'Đã trả'),
 (18, 4, '2025-10-12', '2025-11-13', 'Đang mượn'),
 (19, 1, '2025-10-12', '2025-11-13', 'Đang mượn'),
 (20, 1, '2025-10-12', '2025-11-12', 'Đang mượn'),
 (21, 4, '2025-10-12', '2025-10-15', 'Đã trả'),
-(23, 4, '2025-10-12', '2025-10-15', 'Trả muộn'),
+(23, 3, '2025-10-12', '2025-10-15', 'Trả muộn'),
 (22, 4, '2025-10-14', '2025-10-20', 'Đã trả');
 
 -- --------------------------------------------------------

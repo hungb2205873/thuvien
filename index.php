@@ -1,4 +1,5 @@
 <?php include_once 'config.php';
+$links['home'] = "index.php";
 ?>
 <!DOCTYPE html>
 <html lang="vi">
