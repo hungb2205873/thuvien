@@ -62,12 +62,15 @@
 
     <div class="container">
         
-        <form method="GET" action="timkiemsach.php">
-            <div class="input-group mb-3" style="width:50%;margin:0 auto;">
-                <input type="text" class="form-control" name="timkiem" placeholder="Nhập tên sách để tìm kiếm">
-                <button class="btn btn-primary" name="submit">Tìm kiếm</button>
-            </div> 
-        </form>
+       <form method="GET" action="timkiemsach.php">
+    <div class="input-group mb-3" style="width:80%;margin:0 auto;">
+        <input type="text" class="form-control" name="ten_sach" placeholder="Nhập tên sách">
+        <input type="text" class="form-control" name="tac_gia" placeholder="Nhập tên tác giả">
+        <input type="text" class="form-control" name="the_loai" placeholder="Nhập thể loại">
+        <button class="btn btn-primary" name="submit">Tìm kiếm</button>
+    </div> 
+</form>
+
 
        <table class="table table-bordered table-striped text-center">
    

@@ -10,7 +10,7 @@ if(!isset($_SESSION['tk'])){
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Tìm kiếm mượn trả </title>
+    <title>Tìm kiếm mượn trả</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         a { text-decoration:none; }
@@ -20,17 +20,34 @@ if(!isset($_SESSION['tk'])){
     <div class="container mt-3">
         <a href="hienthimuontra.php" class="btn btn-primary mb-3">Quay lại danh sách</a>
         <h2 class="text-center text-white mb-4" style="background: linear-gradient(to right, #6EC6FF, #6A1B9A);">
-        📚 BookHub
+            📚 BookHub
         </h2>
 
         <?php
-        $search = $_GET['timkiem'] ?? '';
+        $search_sach   = $_GET['timkiem_sach'] ?? '';
+        $search_docgia = $_GET['timkiem_docgia'] ?? '';
+
+        // Xây dựng điều kiện WHERE linh hoạt
+        $conditions = [];
+        if($search_sach != ''){
+            $conditions[] = "s.ten_sach LIKE '%$search_sach%'";
+        }
+        if($search_docgia != ''){
+            $conditions[] = "dg.ten_doc_gia LIKE '%$search_docgia%'";
+        }
+
+        $where = '';
+        if(count($conditions) > 0){
+            $where = "WHERE " . implode(" AND ", $conditions);
+        }
+
         $sql = "SELECT pm.ma_phieu_muon, s.ten_sach, dg.ten_doc_gia, pm.ngay_muon, pm.ngay_tra, pm.trang_thai
                 FROM phieu_muon pm
                 JOIN doc_gia dg ON pm.ma_doc_gia = dg.ma_doc_gia
                 JOIN chi_tiet_phieu_muon ct ON pm.ma_phieu_muon = ct.ma_phieu_muon
                 JOIN sach s ON ct.ma_sach = s.ma_sach
-                WHERE s.ten_sach LIKE '%$search%'";
+                $where
+                ORDER BY pm.ngay_muon ASC";
 
         $res = mysqli_query($conn,$sql);
         ?>
@@ -68,25 +85,26 @@ if(!isset($_SESSION['tk'])){
                         echo "</tr>";
                     }
                 } else {
-                    echo "<tr><td colspan='7'>Không tìm thấy kết quả phù hợp với tên sách: <strong>{$search}</strong></td></tr>";
+                    echo "<tr><td colspan='7'>Không tìm thấy kết quả phù hợp.</td></tr>";
                 }
                 ?>
             </tbody>
         </table>
-         <button class="btn btn-info" type="submit">Xuất báo cáo</button>
+
         <!-- Form xuất báo cáo -->
         <form method="GET" action="xuatbaocaomuontra.php" class="mt-3">
-         <div class="row">
-        <div class="col-sm-3">
-            <input type="number" class="form-control" name="thang" placeholder="Tháng" min="1" max="12" required>
-        </div>
-        <div class="col-sm-3">
-            <input type="number" class="form-control" name="nam" placeholder="Năm" min="2000" max="2100" required>
-        </div>
-        <div class="col-sm-3">
-        </div>
-    </div>
-</form>
+            <div class="row">
+                <div class="col-sm-3">
+                    <input type="number" class="form-control" name="thang" placeholder="Tháng" min="1" max="12" required>
+                </div>
+                <div class="col-sm-3">
+                    <input type="number" class="form-control" name="nam" placeholder="Năm" min="2000" max="2100" required>
+                </div>
+                <div class="col-sm-3">
+                    <button class="btn btn-info" type="submit">Xuất báo cáo</button>
+                </div>
+            </div>
+        </form>
     </div>
 </body>
 </html>

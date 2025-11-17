@@ -1,62 +1,64 @@
 <?php 
-    require_once "../config.php";
-    if(!isset($_SESSION['tk'])){
-        header('location: ../dangnhap.php');
-        die();
-    }
+require_once "../config.php";
+if(!isset($_SESSION['tk'])){
+    header('location: ../dangnhap.php');
+    die();
+}
 
-    if(isset($_POST['save'])){
-        $id_sach    = $_POST['id_sach'] ?? '';
-        $id_dg      = $_POST['id_dg'] ?? '';
-        $ngaymuon   = $_POST['ngaymuon'] ?? '';
-        $ngaytra    = $_POST['ngaytra'] ?? '';
-        $trangthai  = $_POST['trangthai'] ?? '';
+if(isset($_POST['save'])){
+    $id_sach    = $_POST['id_sach'] ?? '';
+    $id_dg      = $_POST['id_dg'] ?? '';
+    $ngaymuon   = $_POST['ngaymuon'] ?? '';
+    $ngaytra    = $_POST['ngaytra'] ?? '';
+    $trangthai  = $_POST['trangthai'] ?? '';
+    $so_luong   = (int)($_POST['so_luong'] ?? 1); // mặc định 1
 
-        $errors = array();
-        if($id_sach == '')   $errors['id_sach']   = "<div class='text-danger'>Bạn chưa chọn sách.</div>";
-        if($id_dg == '')     $errors['id_dg']     = "<div class='text-danger'>Bạn chưa chọn độc giả.</div>";
-        if($ngaymuon == '')  $errors['ngaymuon']  = "<div class='text-danger'>Bạn chưa nhập ngày mượn.</div>";
-        if($ngaytra == '')   $errors['ngaytra']   = "<div class='text-danger'>Bạn chưa nhập ngày trả.</div>";
-        if($trangthai == '') $errors['trangthai'] = "<div class='text-danger'>Bạn chưa chọn trạng thái.</div>";
+    $errors = array();
+    if($id_sach == '')   $errors['id_sach']   = "<div class='text-danger'>Bạn chưa chọn sách.</div>";
+    if($id_dg == '')     $errors['id_dg']     = "<div class='text-danger'>Bạn chưa chọn độc giả.</div>";
+    if($ngaymuon == '')  $errors['ngaymuon']  = "<div class='text-danger'>Bạn chưa nhập ngày mượn.</div>";
+    if($ngaytra == '')   $errors['ngaytra']   = "<div class='text-danger'>Bạn chưa nhập ngày trả.</div>";
+    if($trangthai == '') $errors['trangthai'] = "<div class='text-danger'>Bạn chưa chọn trạng thái.</div>";
+    if($so_luong <= 0)   $errors['so_luong']  = "<div class='text-danger'>Số lượng phải lớn hơn 0.</div>";
 
-        if(!$errors){
-            // Kiểm tra số lượng sách còn lại
-            $sql_check = "SELECT so_luong FROM sach WHERE ma_sach = '$id_sach'";
-            $res_check = mysqli_query($conn,$sql_check);
-            $row_check = mysqli_fetch_assoc($res_check);
+    if(!$errors){
+        // Kiểm tra số lượng sách còn lại
+        $sql_check = "SELECT so_luong FROM sach WHERE ma_sach = '$id_sach'";
+        $res_check = mysqli_query($conn,$sql_check);
+        $row_check = mysqli_fetch_assoc($res_check);
 
-            if($row_check['so_luong'] <= 0){
-                $_SESSION['themmuontra'] = "<div class='text-danger'><strong>Sách này đã hết, không thể mượn</strong></div>";
-                header('location: themmuontra.php');
+        if($row_check['so_luong'] < $so_luong){
+            $_SESSION['themmuontra'] = "<div class='text-danger'><strong>Sách không đủ số lượng để mượn</strong></div>";
+            header('location: themmuontra.php');
+            exit;
+        }
+
+        // Thêm phiếu mượn
+        $sql1 = "INSERT INTO phieu_muon(ma_doc_gia, ngay_muon, ngay_tra, trang_thai)
+                 VALUES('$id_dg','$ngaymuon','$ngaytra','$trangthai')";
+        $res1 = mysqli_query($conn,$sql1);
+
+        if($res1){
+            $last_id = mysqli_insert_id($conn); // lấy id phiếu vừa thêm
+
+            // Thêm chi tiết phiếu mượn với số lượng
+            $sql2 = "INSERT INTO chi_tiet_phieu_muon(ma_phieu_muon, ma_sach, so_luong)
+                     VALUES('$last_id','$id_sach','$so_luong')";
+            $res2 = mysqli_query($conn,$sql2);
+
+            // Trừ số lượng sách
+            $sql3 = "UPDATE sach SET so_luong = so_luong - $so_luong WHERE ma_sach = '$id_sach'";
+            $res3 = mysqli_query($conn,$sql3);
+
+            if($res2 && $res3){
+                $_SESSION['themmuontra1'] = "<div class='text-success'><strong>Thêm phiếu mượn thành công</strong></div>";
+                header('location: hienthimuontra.php');
                 exit;
             }
-
-            // Thêm phiếu mượn
-            $sql1 = "INSERT INTO phieu_muon(ma_doc_gia, ngay_muon, ngay_tra, trang_thai)
-                     VALUES('$id_dg','$ngaymuon','$ngaytra','$trangthai')";
-            $res1 = mysqli_query($conn,$sql1);
-
-            if($res1){
-                $last_id = mysqli_insert_id($conn); // lấy id phiếu vừa thêm
-
-                // Thêm chi tiết phiếu mượn
-                $sql2 = "INSERT INTO chi_tiet_phieu_muon(ma_phieu_muon, ma_sach)
-                         VALUES('$last_id','$id_sach')";
-                $res2 = mysqli_query($conn,$sql2);
-
-                // Trừ số lượng sách
-                $sql3 = "UPDATE sach SET so_luong = so_luong - 1 WHERE ma_sach = '$id_sach'";
-                $res3 = mysqli_query($conn,$sql3);
-
-                if($res2 && $res3){
-                    $_SESSION['themmuontra1'] = "<div class='text-success'><strong>Thêm phiếu mượn thành công</strong></div>";
-                    header('location: hienthimuontra.php');
-                    exit;
-                }
-            }
-            $_SESSION['themmuontra'] = "<div class='text-danger text-center'><strong>Thêm phiếu mượn thất bại</strong></div>";
         }
+        $_SESSION['themmuontra'] = "<div class='text-danger text-center'><strong>Thêm phiếu mượn thất bại</strong></div>";
     }
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -145,13 +147,20 @@
                 </div>
             </div>
 
+            <!-- Số lượng -->
+            <div class="row mb-3">
+                <label for="so_luong" class="form-label col-sm-2 text-end"><strong>Số lượng</strong></label>
+                <div class="col-sm-10">
+                    <input type="number" class="form-control" id="so_luong" name="so_luong" min="1" value="1">
+                    <?php if(isset($errors['so_luong'])) echo $errors['so_luong']; ?>
+                </div>
+            </div>
+
             <!-- Nút lưu -->
             <div class="row mb-3">
                 <div class="col-sm-10 offset-sm-2">
+                   <div class="row mb-3">
+                <div class="col-sm-10 offset-sm-2">
                     <button class="btn btn-success" name="save">Lưu lại</button>
                 </div>
-            </div>
-        </form>
-    </div>
-</body>
-</html>
+</div>

@@ -1,74 +1,68 @@
-<?php 
-    require_once "../config.php";
-    if(!isset($_SESSION['tk'])){
-        header('location: ../dangnhap.php');
-        die();
-    }
+<?php
+require_once "../config.php";
+if(!isset($_SESSION['tk'])){
+    header('location: ../dangnhap.php');
+    die();
+}
 
-    header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
-    header('Content-Disposition: attachment; filename="bao_cao_tien_phat_' . date('Y-m-d_H-i-s') . '.csv"');
-    
-    $output = fopen('php://output', 'w');
-    // Thêm BOM cho UTF-8 (để Excel hiển thị tiếng Việt đúng)
-    fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
-    
-    // Header của báo cáo
-    fputcsv($output, array(
-        'STT',
-        'Tên Độc Giả',
-        'Tên Sách',
-        'Ngày Mượn',
-        'Ngày Trả Hạn',
-        'Giá Sách (đ)',
-        'Số Ngày Quá Hạn',
-        'Tiền Phạt (đ)'
-    ), ',');
+// Lấy tham số tháng/năm nếu có
+$thang = $_GET['thang'] ?? date('m');
+$nam   = $_GET['nam'] ?? date('Y');
 
-    $sql = "SELECT mt.id, mt.id_sach, mt.id_dg, mt.ngaymuon, mt.ngaytra, mt.tinhtrang, 
-                   dg.tendg, s.tensach, s.gia
-            FROM muontra mt
-            JOIN docgia dg ON mt.id_dg = dg.id
-            JOIN sach s ON mt.id_sach = s.id
-            WHERE mt.tinhtrang = 'Chưa trả'
-            ORDER BY mt.ngaytra ASC";
-    
-    $res = mysqli_query($conn, $sql);
-    $index = 0;
-    $tongtienphat = 0;
-    
-    if($res == true){
-        while($rows = mysqli_fetch_assoc($res)){
-            $index++;
-            $tendg = $rows['tendg'];
-            $tensach = $rows['tensach'];
-            $ngaymuon = $rows['ngaymuon'];
-            $ngaytra = $rows['ngaytra'];
-            $gia = $rows['gia'];
-            
-            $today = date('Y-m-d');
-            $ngaytra_time = strtotime($ngaytra);
-            $today_time = strtotime($today);
-            $soNgayQuaHan = max(0, ceil(($today_time - $ngaytra_time) / (60 * 60 * 24)));
-            $tienphat = $soNgayQuaHan * 1000;
-            $tongtienphat += $tienphat;
-            
-            fputcsv($output, array(
-                $index,
-                $tendg,
-                $tensach,
-                $ngaymuon,
-                $ngaytra,
-                $gia,
-                $soNgayQuaHan,
-                $tienphat
-            ), ',');
-        }
+// Thiết lập header để tải file Excel
+header("Content-Type: application/vnd.ms-excel; charset=UTF-8");
+header("Content-Disposition: attachment; filename=baocao_tienphat_{$thang}_{$nam}.xls");
+header("Pragma: no-cache");
+header("Expires: 0");
+
+// Truy vấn dữ liệu từ phieu_muon với trạng thái Trả muộn
+$sql = "SELECT dg.ten_doc_gia, s.ten_sach, pm.ngay_muon, pm.ngay_tra, pm.trang_thai
+        FROM phieu_muon pm
+        JOIN doc_gia dg ON pm.ma_doc_gia = dg.ma_doc_gia
+        JOIN chi_tiet_phieu_muon ct ON pm.ma_phieu_muon = ct.ma_phieu_muon
+        JOIN sach s ON ct.ma_sach = s.ma_sach
+        WHERE pm.trang_thai = 'Trả muộn'
+          AND MONTH(pm.ngay_tra) = '$thang'
+          AND YEAR(pm.ngay_tra) = '$nam'
+        ORDER BY pm.ngay_tra ASC";
+
+$res = mysqli_query($conn, $sql);
+
+// Xuất bảng
+echo "<table border='1'>";
+echo "<tr>
+        <th>STT</th>
+        <th>Tên Độc Giả</th>
+        <th>Tên Sách</th>
+        <th>Ngày Mượn</th>
+        <th>Ngày Trả</th>
+        <th>Trạng Thái</th>
+        <th>Tiền Phạt</th>
+      </tr>";
+
+$index = 0;
+$tongtienphat = 0;
+if($res && mysqli_num_rows($res) > 0){
+    while($row = mysqli_fetch_assoc($res)){
+        $index++;
+        $tienphat = 10000; // mặc định 10,000đ
+        $tongtienphat += $tienphat;
+
+        echo "<tr>";
+        echo "<td>{$index}</td>";
+        echo "<td>{$row['ten_doc_gia']}</td>";
+        echo "<td>{$row['ten_sach']}</td>";
+        echo "<td>{$row['ngay_muon']}</td>";
+        echo "<td>{$row['ngay_tra']}</td>";
+        echo "<td>{$row['trang_thai']}</td>";
+        echo "<td>".number_format($tienphat,0,',','.')."đ</td>";
+        echo "</tr>";
     }
-    
-    // Thêm hàng tổng
-    fputcsv($output, array(), ',');
-    fputcsv($output, array('', '', '', '', '', '', 'TỔNG TIỀN PHẠT', $tongtienphat), ',');
-    
-    fclose($output);
-    exit;
+    // Dòng tổng tiền phạt
+    echo "<tr><td colspan='6'><strong>Tổng tiền phạt</strong></td>
+              <td><strong>".number_format($tongtienphat,0,',','.')."đ</strong></td></tr>";
+} else {
+    echo "<tr><td colspan='7'>Không có dữ liệu báo cáo cho tháng {$thang}/{$nam}</td></tr>";
+}
+echo "</table>";
 ?>

@@ -18,6 +18,7 @@ if (isset($_POST['submit'])) {
     }
 
     if (!$errors) {
+        // Truy vấn bảng admin trong qlthuvien.sql
         $sql = "SELECT * FROM admin WHERE tk='$tk' AND mk='$mk'";
         $res = mysqli_query($conn, $sql);
 
@@ -57,7 +58,7 @@ if (isset($_POST['submit'])) {
             <span></span>
           </button>
           <ul class="nav-menu" id="navMenu">
-            <li> <a href="index.php">Trang chủ</a> </li>
+            <li><a href="">Trang Chủ</a></li>
              <li><a href="">Thư Viện</a></li>
             <li class="nav-dropdown">
               <a href="#" class="dropdown-toggle">Thể Loại</a>

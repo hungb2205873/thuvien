@@ -172,6 +172,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `LayPhieuMuonDaTra` ()   BEGIN
     WHERE pm.trang_thai = 'Đã trả';
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `LayPhieuMuonTramuon` ()   BEGIN
+    SELECT * FROM phieu_muon pm
+    join doc_gia dg on dg.ma_doc_gia = pm.ma_doc_gia
+    WHERE pm.trang_thai = 'Trả muộn';
+END$$
+
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ThemDocGia` (IN `ten_doc_gia` VARCHAR(255), IN `ngay_sinh` DATE, IN `so_dien_thoai` VARCHAR(15))   BEGIN
     INSERT INTO doc_gia (ten_doc_gia, ngay_sinh, so_dien_thoai)
     VALUES (ten_doc_gia, ngay_sinh, so_dien_thoai);
@@ -555,7 +562,7 @@ CREATE TABLE `phieu_muon` (
   `ma_doc_gia` int(11) DEFAULT NULL,
   `ngay_muon` date NOT NULL,
   `ngay_tra` date NOT NULL,
-  `trang_thai` enum('Đang mượn','Đã trả') NOT NULL DEFAULT 'Đang mượn'
+  `trang_thai` enum('Đang mượn','Đã trả','Trả muộn') NOT NULL DEFAULT 'Đang mượn'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -582,6 +589,7 @@ INSERT INTO `phieu_muon` (`ma_phieu_muon`, `ma_doc_gia`, `ngay_muon`, `ngay_tra`
 (19, 1, '2025-10-12', '2025-11-13', 'Đang mượn'),
 (20, 1, '2025-10-12', '2025-11-12', 'Đang mượn'),
 (21, 4, '2025-10-12', '2025-10-15', 'Đã trả'),
+(23, 4, '2025-10-12', '2025-10-15', 'Trả muộn'),
 (22, 4, '2025-10-14', '2025-10-20', 'Đã trả');
 
 -- --------------------------------------------------------

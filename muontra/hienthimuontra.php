@@ -13,8 +13,9 @@
    <nav class="navbar navbar-expand-lg navbar-light shadow-sm sticky-top" style="background: linear-gradient(to right, #6EC6FF, #6A1B9A);">
 
     <div class="container-fluid">
-   <a class="navbar-brand fw-bold" href="../index.php">
+        <a class="navbar-brand fw-bold" href="index.php">
             <span class="text-gradient">📚 BookHub</span>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -57,12 +58,14 @@
 
     <div class="container">
         
-        <form method="GET" action="timkiemmuontra.php">
-            <div class="input-group mb-3" style="width:50%;margin:0 auto;">
-                <input type="text" class="form-control" name="timkiem" placeholder="Tìm kiếm sách ">
-                <button class="btn btn-primary" name="submit">Tìm kiếm</button>
-            </div> 
-        </form>
+      <form method="GET" action="timkiemmuontra.php">
+    <div class="input-group mb-3" style="width:70%;margin:0 auto;">
+        <input type="text" class="form-control" name="timkiem_sach" placeholder="Nhập tên sách để tìm kiếm">
+        <input type="text" class="form-control" name="timkiem_docgia" placeholder="Nhập tên độc giả để tìm kiếm">
+        <button class="btn btn-primary" name="submit">Tìm kiếm</button>
+    </div> 
+</form>
+
 
         <table class="table table-bordered table-striped text-center">
             <thead>
@@ -125,20 +128,21 @@
         </table>
 
         <a href="themmuontra.php" class="btn btn-success">Thêm Mượn Trả</a>
-         <button class="btn btn-info" type="submit">Xuất báo cáo</button>
-        <!-- Form xuất báo cáo -->
+        
+     <!-- Form xuất báo cáo -->
         <form method="GET" action="xuatbaocaomuontra.php" class="mt-3">
-         <div class="row">
-        <div class="col-sm-3">
+                <div class="row">
+            <div class="col-sm-3">
             <input type="number" class="form-control" name="thang" placeholder="Tháng" min="1" max="12" required>
-        </div>
-        <div class="col-sm-3">
+            </div>
+            <div class="col-sm-3">
             <input type="number" class="form-control" name="nam" placeholder="Năm" min="2000" max="2100" required>
+            </div>
+            <div class="col-sm-3">
+            <button class="btn btn-info" type="submit">Xuất báo cáo</button>
+            </div>
         </div>
-        <div class="col-sm-3">
-        </div>
-    </div>
-</form>
+        </form>
 
 
     </div>

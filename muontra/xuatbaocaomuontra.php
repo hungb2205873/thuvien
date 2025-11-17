@@ -5,6 +5,7 @@ if(!isset($_SESSION['tk'])){
     die();
 }
 
+// Lấy tham số tháng/năm từ form
 $thang = $_GET['thang'] ?? date('m');
 $nam   = $_GET['nam'] ?? date('Y');
 
@@ -14,43 +15,44 @@ header("Content-Disposition: attachment; filename=baocao_muontra_{$thang}_{$nam}
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// Gọi procedure
-$sql = "CALL XuatBaoCaoMuonTra($thang, $nam)";
+// Truy vấn dữ liệu phiếu mượn theo tháng/năm
+$sql = "SELECT s.ten_sach, dg.ten_doc_gia, pm.ngay_muon, pm.ngay_tra, pm.trang_thai
+        FROM phieu_muon pm
+        JOIN doc_gia dg ON pm.ma_doc_gia = dg.ma_doc_gia
+        JOIN chi_tiet_phieu_muon ct ON pm.ma_phieu_muon = ct.ma_phieu_muon
+        JOIN sach s ON ct.ma_sach = s.ma_sach
+        WHERE MONTH(pm.ngay_muon) = '$thang'
+          AND YEAR(pm.ngay_muon) = '$nam'
+        ORDER BY pm.ngay_muon ASC";
+
 $res = mysqli_query($conn, $sql);
 
+// Xuất bảng
 echo "<table border='1'>";
 echo "<tr>
-        <th>Mã phiếu mượn</th>
-        <th>Mã độc giả</th>
-        <th>Mã sách</th>
+        <th>STT</th>
+        <th>Tên sách</th>
+        <th>Tên Độc Giả</th>
         <th>Ngày mượn</th>
-        <th>Ngày trả dự kiến</th>
-        <th>Ngày trả thực tế</th>
-        <th>Trạng thái</th>
-        <th>Tiền phạt</th>
-        <th>Số lần mượn</th>
+        <th>Ngày trả</th>
+        <th>Trạng Thái</th>
       </tr>";
 
+$index = 0;
 if($res && mysqli_num_rows($res) > 0){
     while($row = mysqli_fetch_assoc($res)){
+        $index++;
         echo "<tr>";
-        echo "<td>{$row['ma_phieu_muon']}</td>";
-        echo "<td>{$row['ma_doc_gia']}</td>";
-        echo "<td>{$row['ma_sach']}</td>";
+        echo "<td>{$index}</td>";
+        echo "<td>{$row['ten_sach']}</td>";
+        echo "<td>{$row['ten_doc_gia']}</td>";
         echo "<td>{$row['ngay_muon']}</td>";
-        echo "<td>{$row['ngay_tra_du_kien']}</td>";
-        echo "<td>{$row['ngay_tra_thuc_te']}</td>";
+        echo "<td>{$row['ngay_tra']}</td>";
         echo "<td>{$row['trang_thai']}</td>";
-        echo "<td>".number_format($row['tien_phat'],0,',','.')."đ</td>";
-        echo "<td>{$row['so_lan_muon']}</td>";
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='9'>Không có dữ liệu báo cáo cho tháng {$thang}/{$nam}</td></tr>";
+    echo "<tr><td colspan='6'>Không có dữ liệu báo cáo cho tháng {$thang}/{$nam}</td></tr>";
 }
 echo "</table>";
-
-// Sau khi gọi procedure, cần giải phóng kết quả để tránh lỗi "Commands out of sync"
-mysqli_free_result($res);
-mysqli_next_result($conn);
 ?>

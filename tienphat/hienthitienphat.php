@@ -14,9 +14,6 @@ if(!isset($_SESSION['tk'])){
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         a { text-decoration:none; }
-        .penalty-badge { font-size: 14px; font-weight: bold; padding: 6px 10px; }
-        .no-penalty { background-color: #28a745; color: white; }
-        .has-penalty { background-color: #dc3545; color: white; }
     </style>
 </head>
 <body>
@@ -55,47 +52,49 @@ if(!isset($_SESSION['tk'])){
                 <th>Tên Độc Giả</th>
                 <th>Tên Sách</th>
                 <th>Ngày Mượn</th>
-                <th>Ngày Trả Sách</th>
-                <th>Trạng Thái</th>
+                <th>Ngày Trả</th>
+                <th>Tình Trạng</th>
                 <th>Tiền Phạt</th>
             </tr>
             <tbody>
                 <?php
                     if(isset($_GET['submit'])){
                         $search = $_GET['timkiem'] ?? '';
-                        $sql = "SELECT pt.ma_phieu_tra, dg.ten_doc_gia, s.ten_sach, pm.ngay_muon, pt.ngay_tra_sach, pm.trang_thai, pt.tien_phat
-                                FROM phieu_tra pt
-                                JOIN chi_tiet_phieu_muon ct ON pt.ma_ctpm = ct.ma_ctpm
-                                JOIN phieu_muon pm ON ct.ma_phieu_muon = pm.ma_phieu_muon
+                        $sql = "SELECT dg.ten_doc_gia, s.ten_sach, pm.ngay_muon, pm.ngay_tra, pm.trang_thai
+                                FROM phieu_muon pm
                                 JOIN doc_gia dg ON pm.ma_doc_gia = dg.ma_doc_gia
+                                JOIN chi_tiet_phieu_muon ct ON pm.ma_phieu_muon = ct.ma_phieu_muon
                                 JOIN sach s ON ct.ma_sach = s.ma_sach
-                                WHERE dg.ten_doc_gia LIKE '%$search%'
-                                ORDER BY pt.ngay_tra_sach ASC";
+                                WHERE pm.trang_thai = 'Trả muộn'
+                                  AND dg.ten_doc_gia LIKE '%$search%'
+                                ORDER BY pm.ngay_tra ASC";
                     } else {
-                        $sql = "SELECT pt.ma_phieu_tra, dg.ten_doc_gia, s.ten_sach, pm.ngay_muon, pt.ngay_tra_sach, pm.trang_thai, pt.tien_phat
-                                FROM phieu_tra pt
-                                JOIN chi_tiet_phieu_muon ct ON pt.ma_ctpm = ct.ma_ctpm
-                                JOIN phieu_muon pm ON ct.ma_phieu_muon = pm.ma_phieu_muon
+                        $sql = "SELECT dg.ten_doc_gia, s.ten_sach, pm.ngay_muon, pm.ngay_tra, pm.trang_thai
+                                FROM phieu_muon pm
                                 JOIN doc_gia dg ON pm.ma_doc_gia = dg.ma_doc_gia
+                                JOIN chi_tiet_phieu_muon ct ON pm.ma_phieu_muon = ct.ma_phieu_muon
                                 JOIN sach s ON ct.ma_sach = s.ma_sach
-                                ORDER BY pt.ngay_tra_sach ASC";
+                                WHERE pm.trang_thai = 'Trả muộn'
+                                ORDER BY pm.ngay_tra ASC";
                     }
 
                     $res = mysqli_query($conn, $sql);
                     $index = 0;
-                    $tongtienphat = 0;
+                    $tongTheoDocGia = []; // mảng lưu tổng tiền phạt theo từng độc giả
                     if($res){
                         while($rows = mysqli_fetch_assoc($res)){
                             $index++;
                             $tendg = $rows['ten_doc_gia'];
                             $tensach = $rows['ten_sach'];
                             $ngaymuon = $rows['ngay_muon'];
-                            $ngaytra = $rows['ngay_tra_sach'];
+                            $ngaytra = $rows['ngay_tra'];
                             $trangthai = $rows['trang_thai'];
-                            $tienphat = $rows['tien_phat'];
-                            $tongtienphat += $tienphat;
-                            $badgeClass = ($tienphat > 0) ? 'has-penalty' : 'no-penalty';
-                            $badgeText = ($tienphat > 0) ? 'Nợ tiền' : 'Không nợ';
+                            $tienphat = 10000; // mặc định 10,000đ
+
+                            if(!isset($tongTheoDocGia[$tendg])){
+                                $tongTheoDocGia[$tendg] = 0;
+                            }
+                            $tongTheoDocGia[$tendg] += $tienphat;
                             ?>
                             <tr>
                                 <td><?php echo $index; ?></td>
@@ -103,7 +102,7 @@ if(!isset($_SESSION['tk'])){
                                 <td><?php echo $tensach; ?></td>
                                 <td><?php echo $ngaymuon; ?></td>
                                 <td><?php echo $ngaytra; ?></td>
-                                <td><span class="badge penalty-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span></td>
+                                <td><?php echo $trangthai; ?></td>
                                 <td><strong><?php echo number_format($tienphat, 0, ',', '.'); ?>đ</strong></td>
                             </tr>
                             <?php
@@ -114,8 +113,30 @@ if(!isset($_SESSION['tk'])){
         </table>
 
         <div class="alert alert-warning mt-3">
-            <h5>Tổng tiền phạt chưa thu: <strong><?php echo number_format($tongtienphat, 0, ',', '.'); ?>đ</strong></h5>
+            <h5><strong>Tổng tiền phạt theo độc giả:</strong></h5>
+            <ul>
+                <?php
+                foreach($tongTheoDocGia as $docgia => $tong){
+                    echo "<li>{$docgia}: " . number_format($tong, 0, ',', '.') . "đ</li>";
+                }
+                ?>
+            </ul>
         </div>
+        <!-- Nút xuất báo cáo -->
+        <form method="GET" action="xuatbaocaotienphat.php" class="mt-3">
+            <div class="row">
+                <div class="col-sm-3">
+                    <input type="number" class="form-control" name="thang" placeholder="Tháng" min="1" max="12" required>
+                </div>
+                <div class="col-sm-3">
+                    <input type="number" class="form-control" name="nam" placeholder="Năm" min="2000" max="2100" required>
+                </div>
+                <div class="col-sm-3">
+                    <button class="btn btn-info" type="submit">Xuất báo cáo</button>
+                </div>
+            </div>
+        </form>
+
     </div>
 </body>
 </html>
